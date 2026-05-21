@@ -170,7 +170,7 @@ function Plotter:new(args)
                     if yaxis then
                         b = -b/a
                         a = 1/a
-                        for i=v,v1,(dy/math.abs(dy)) * 1/(screen.sy*3/2) do
+                        for i=v,v1,(dy/math.abs(dy)) * 1/(screen.sy*self.ycoeff) do
                             self:drawLine(screen,image,i*a+b,i,uz,i,color)
                         end
                     else
@@ -210,7 +210,7 @@ function Plotter:drawLine(screen,image,u1,v1,u2,v2,col)
             image:setPx(x,y,color)
         end
     else
-        local interval = 1/(screen.sy*3/2)
+        local interval = 1/(screen.sy*self.ycoeff)
         interval = dy > 0 and -interval or interval
         for y=v1,v2,interval do
             color = type(col) == "function" and col(u1,y) or col
@@ -250,7 +250,7 @@ function Plotter:plot(args)
     local autoscalex = args.autoscalex or autoscale
     local autoscaley = args.autoscaley or autoscale
     local onRender = args.onRender or function(self,screen,image) end
-    local image = args.bg and args.bg:duplicate() or ImageHandler:new(screen.sx,round(screen.sy*3/2)):process(function()
+    local image = args.bg and args.bg:duplicate() or ImageHandler:new(screen.sx,round(screen.sy*self.ycoeff)):process(function()
         return self.bgCol
     end)
     local minx = math.huge
