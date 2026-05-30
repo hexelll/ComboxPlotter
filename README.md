@@ -4,4 +4,4 @@ right now only 2d plotting is supported.
   
 > this uses ComBox for the rendering.   
 ## Exemple
-(exemple plot)[plotter1.gif]
+![exemple plot](plotter1.gif)
