@@ -193,30 +193,39 @@ function Plotter:new(args)
 end
 
 function Plotter:drawLine(screen,image,u1,v1,u2,v2,col)
-    local color = type(col) == "function" and col(u1,v1) or col
-    image:setPx(u1,v1,color)
-    color = type(col) == "function" and col(u2,v2) or col
-    image:setPx(u2,v2,color)
-    local dy = v1-v2
-    local dx = u1-u2
-    if dx ~= 0 then
-        local interval = 1/(screen.sx+(dy ~= 0 and 3*math.abs(screen.sy/dy) or 0))
-        interval = dx > 0 and -interval or interval
-        local a = dy/dx
-        local b = v1-a*u1
-        for x=u1,u2,interval do
-            local y = a*x+b
-            color = type(col) == "function" and col(x,y) or col
-            image:setPx(x,y,color)
+    local x0 = round(u1*(image.sx-1))
+    local y0 = round(v1*(image.sy-1))
+    local x1 = round(u2*(image.sx-1))
+    local y1 = round(v2*(image.sy-1))
+    
+    local dx = math.abs(x1 - x0)
+    local sx = x0 < x1 and 1 or -1
+    local dy = -math.abs(y1 - y0)
+    local sy = y0 < y1 and 1 or -1
+    local err = dx + dy
+    
+    while true do
+        local u,v = x0/(image.sx-1),y0/((image.sy-1))
+        local color = type(col) == "function" and col(u,v) or col
+        image:setPx(u,v,color)
+        local e2 = 2 * err
+        if e2 >= dy then
+            if x0 == x1 then
+                break
+            end
+            err = err + dy
+            x0 = x0 + sx
         end
-    else
-        local interval = 1/(screen.sy*self.ycoeff)
-        interval = dy > 0 and -interval or interval
-        for y=v1,v2,interval do
-            color = type(col) == "function" and col(u1,y) or col
-            image:setPx(u1,y,color)
+        if e2 <= dx then
+            if y0 == y1 then
+                break
+            end
+            err = err + dx
+            y0 = y0 + sy
         end
     end
+
+    
 end
 
 function Plotter:sample(fn,a,b,interval,ptype,args)
@@ -226,6 +235,7 @@ function Plotter:sample(fn,a,b,interval,ptype,args)
     for i=a,b,interval do
         points[#points+1] = fn(i)
     end
+    points[#points+1] = fn(b)
     return {data=points,type=ptype,args=args}
 end
 
